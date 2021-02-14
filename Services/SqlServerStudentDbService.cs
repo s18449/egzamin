@@ -2,15 +2,18 @@
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Web.Http;
 
-namespace Wyklad5.Services
+namespace egzamin.Services
 {
     public class SqlServerStudentDbService : IMedicineDbService
     {
+
 
         public Medicament GetMedicament(string idMedicament)
         {
@@ -22,97 +25,82 @@ namespace Wyklad5.Services
                 con.Open();
                 var tran = con.BeginTransaction();
 
-                try
+
+                com.CommandText = "SELECT IdMedicament, Name, Description, Type FROM medicament  WHERE idmedicament = @idmedicament";
+                com.Parameters.AddWithValue("idmedicament", idMedicament);
+
+                var dr = com.ExecuteReader();
+
+                Medicament medicament = new Medicament();
+                var prescriptions = new List<Prescription>();
+
+                if (dr.Read())
                 {
-
-                    com.CommandText = "select * from medicament where idmedicament = @idmedicament";
-                    com.Parameters.AddWithValue("idmedicament", idMedicament);
-
-                    var dr1 = com.ExecuteReader();
-
-                    if (!dr1.Read())
-                    {
-                        throw new HttpResponseException()
-                    }
-
+                    medicament.IdMedicament = dr["IdMedicament"].ToString();
+                    medicament.Name = dr["Name"].ToString();
+                    medicament.Description = dr["Description"].ToString();
+                    medicament.Type = dr["Type"].ToString();
 
                 }
-                catch (SqlException exc)
+                else
                 {
-                    tran.Rollback();
+                    return null;
                 }
+
+                com.CommandText = "SELECT IdPrescription, Date, DueDate FROM medicament" +
+                   "INNER JOIN prescription_medicament ON medicament.IdMedicament = prescription_medicament.IdMedicament " +
+                   "INNER JOIN prescription ON prescription_medicament.IdPrescription = prescription.IdPresciprion " +
+                   "WHERE idmedicament = @idmedicament";
+                com.Parameters.AddWithValue("idmedicament", idMedicament);
+
+                var dr1 = com.ExecuteReader();
+
+
+                while (dr.Read()) {
+                    Prescription prescription = new Prescription();
+
+                    prescription.IdPrescription = dr["IdPrescription"].ToString();
+                    prescription.Date = dr1.GetDateTime("Date");
+                    prescription.DueDate = dr1.GetDateTime("DueDate");
+
+                    prescriptions.Add(prescription);
+                }
+
+                prescriptions.Sort((x, y) => y.Date.CompareTo(x.Date));
+
+                medicament.PrescriptionList = prescriptions;
+
+                return medicament;
             }
 
-            return Ok(ble);
         }
 
         public void DeletePatient(string idPatient)
         {
-            var st = new Student();
-            st.FirstName = request.FirstName;
 
-            using (var con = new SqlConnection("Data Source=db-mssql;Initial Catalog=s18449;Integrated Security=True"))
-            using (var com = new SqlCommand())
+            try
             {
-                com.Connection = con;
-
-                con.Open();
-                var tran = con.BeginTransaction();
-
-                try
+                using (var con = new SqlConnection("Data Source=db-mssql;Initial Catalog=s18449;Integrated Security=True"))
+                using (var com = new SqlCommand())
                 {
+                    com.Connection = con;
 
-                    com.CommandText = "select IdStudies from studies where indexnumber = @index";
+                    con.Open();
+                    var tran = con.BeginTransaction();
 
-                    com.Parameters.AddWithValue("index", request.IndexNumber);
 
-                    var dr = com.ExecuteReader();
-
-                    if (dr.Read())
-                    {
-                        tran.Rollback();
-                        return BadRequest("Numer indeksu nie jest unikatowy");
-
-                    }
-
-                    com.CommandText = "select IdStudies from studies where name = @name";
-
-                    com.Parameters.AddWithValue("name", request.Studies);
-
-                    var dr1 = com.ExecuteReader();
-
-                    if (!dr1.Read())
-                    {
-                        tran.Rollback();
-                        return BadRequest("Studia nie istnieja");
-
-                    }
-
-                    int idstudies = (int)dr1["IdStudies"];
-
-                    com.CommandText = "INSERT INTO Student(IndexNumber, FirstName) VALUES(@Index, @Fname)";
-
-                    com.Parameters.AddWithValue("index", request.IndexNumber);
-
+                    com.CommandText = "DELETE FROM patient WHERE idpatient = @idpatient";
+                    com.Parameters.AddWithValue("idpatient", idPatient);
                     com.ExecuteNonQuery();
 
-                    tran.Commit();
-
                 }
-                catch (SqlException exc)
-                {
-                    tran.Rollback();
-                }
-
-
-
+            } catch (Exception e)
+            {
+                
             }
 
-            throw new NotImplementedException();
         }
 
 
-
-      
     }
 }

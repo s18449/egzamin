@@ -1,11 +1,15 @@
-﻿namespace egzamin.Models
+﻿using System.Collections.Generic;
+
+namespace egzamin.Models
 {
-    public class Student
+    public class Medicament
     {
-        public int IdStudent { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string IndexNumber { get; set; }
+        public string IdMedicament { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Type { get; set; }
+
+        public List<Prescription> PrescriptionList { get; set; }
 
     }
 }

@@ -1,11 +1,12 @@
-﻿namespace egzamin.Models
+﻿using System;
+
+namespace egzamin.Models
 {
-    public class Student
+    public class Prescription
     {
-        public int IdStudent { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string IndexNumber { get; set; }
+        public string IdPrescription { get; set; }
+        public DateTime Date { get; set; }
+        public DateTime DueDate { get; set; }
 
     }
 }
