@@ -30,7 +30,7 @@ namespace egzamin.Controllers
 
             if(medicament == null)
             {
-                return BadRequest("Medicament with id " + idMedicament + " does not exist");
+                return NotFound("Medicament with id " + idMedicament + " does not exist");
             }
 
             return Ok(medicament);
