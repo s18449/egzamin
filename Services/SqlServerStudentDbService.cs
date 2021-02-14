@@ -96,7 +96,7 @@ namespace egzamin.Services
                 }
             } catch (Exception e)
             {
-                
+                throw new InvalidOperationException("Could not delete patient: " + e.StackTrace);
             }
 
         }
